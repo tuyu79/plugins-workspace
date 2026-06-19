@@ -28,7 +28,7 @@ Also allows to load or close a connection.
 <tr>
 <td>
 
-`sql-pub:allow-close`
+`sql:allow-close`
 
 </td>
 <td>
@@ -41,7 +41,7 @@ Enables the close command without any pre-configured scope.
 <tr>
 <td>
 
-`sql-pub:deny-close`
+`sql:deny-close`
 
 </td>
 <td>
@@ -54,7 +54,7 @@ Denies the close command without any pre-configured scope.
 <tr>
 <td>
 
-`sql-pub:allow-execute`
+`sql:allow-execute`
 
 </td>
 <td>
@@ -67,7 +67,7 @@ Enables the execute command without any pre-configured scope.
 <tr>
 <td>
 
-`sql-pub:deny-execute`
+`sql:deny-execute`
 
 </td>
 <td>
@@ -80,7 +80,7 @@ Denies the execute command without any pre-configured scope.
 <tr>
 <td>
 
-`sql-pub:allow-load`
+`sql:allow-load`
 
 </td>
 <td>
@@ -93,7 +93,7 @@ Enables the load command without any pre-configured scope.
 <tr>
 <td>
 
-`sql-pub:deny-load`
+`sql:deny-load`
 
 </td>
 <td>
@@ -106,7 +106,7 @@ Denies the load command without any pre-configured scope.
 <tr>
 <td>
 
-`sql-pub:allow-select`
+`sql:allow-select`
 
 </td>
 <td>
@@ -119,7 +119,7 @@ Enables the select command without any pre-configured scope.
 <tr>
 <td>
 
-`sql-pub:deny-select`
+`sql:deny-select`
 
 </td>
 <td>
