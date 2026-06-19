@@ -1,13 +1,13 @@
 [package]
-name = "tauri-plugin-sql"
-version = "2.4.0"
+name = "tauri-plugin-sql-pub"
+version = "2.4.1"
 description = "Interface with SQL databases."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
-repository = { workspace = true }
-links = "tauri-plugin-sql"
+repository = "https://github.com/tuyu79/plugins-workspace.git"
+links = "tauri-plugin-sql-pub"
 
 [package.metadata.docs.rs]
 features = ["sqlite"]

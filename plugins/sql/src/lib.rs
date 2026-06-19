@@ -16,6 +16,7 @@ mod wrapper;
 
 pub use error::Error;
 pub use wrapper::DbPool;
+pub use commands::*;
 
 use futures_core::future::BoxFuture;
 use serde::{Deserialize, Serialize};
@@ -36,7 +37,7 @@ pub struct DbInstances(pub RwLock<HashMap<String, DbPool>>);
 
 #[derive(Serialize)]
 #[serde(untagged)]
-pub(crate) enum LastInsertId {
+pub enum LastInsertId {
     #[cfg(feature = "sqlite")]
     Sqlite(i64),
     #[cfg(feature = "mysql")]
@@ -135,7 +136,7 @@ impl Builder {
     }
 
     pub fn build<R: Runtime>(mut self) -> TauriPlugin<R, Option<PluginConfig>> {
-        PluginBuilder::<R, Option<PluginConfig>>::new("sql")
+        PluginBuilder::<R, Option<PluginConfig>>::new("sql-pub")
             .invoke_handler(tauri::generate_handler![
                 commands::load,
                 commands::execute,

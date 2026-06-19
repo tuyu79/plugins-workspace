@@ -54,27 +54,25 @@ pub(crate) async fn close(
 
 /// Execute a command against the database
 #[command]
-pub(crate) async fn execute(
+pub async fn execute(
     db_instances: State<'_, DbInstances>,
-    db: String,
     query: String,
     values: Vec<JsonValue>,
 ) -> Result<(u64, LastInsertId), crate::Error> {
     let instances = db_instances.0.read().await;
 
-    let db = instances.get(&db).ok_or(Error::DatabaseNotLoaded(db))?;
+    let db =  instances.values().next().ok_or(Error::DatabaseNotLoaded("".to_string()))?;
     db.execute(query, values).await
 }
 
 #[command]
-pub(crate) async fn select(
+pub async fn select(
     db_instances: State<'_, DbInstances>,
-    db: String,
     query: String,
     values: Vec<JsonValue>,
 ) -> Result<Vec<IndexMap<String, JsonValue>>, crate::Error> {
     let instances = db_instances.0.read().await;
 
-    let db = instances.get(&db).ok_or(Error::DatabaseNotLoaded(db))?;
+    let db =  instances.values().next().ok_or(Error::DatabaseNotLoaded("".to_string()))?;
     db.select(query, values).await
 }

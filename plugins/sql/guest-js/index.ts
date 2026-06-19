@@ -26,8 +26,13 @@ export interface QueryResult {
  */
 export default class Database {
   path: string
+
   constructor(path: string) {
     this.path = path
+  }
+
+  static default(): Database {
+    return new Database('')
   }
 
   /**
@@ -46,7 +51,7 @@ export default class Database {
    * ```
    */
   static async load(path: string): Promise<Database> {
-    const _path = await invoke<string>('plugin:sql|load', {
+    const _path = await invoke<string>('plugin:sql-pub|load', {
       db: path
     })
 
@@ -107,7 +112,7 @@ export default class Database {
    */
   async execute(query: string, bindValues?: unknown[]): Promise<QueryResult> {
     const [rowsAffected, lastInsertId] = await invoke<[number, number]>(
-      'plugin:sql|execute',
+      'plugin:sql-pub|execute',
       {
         db: this.path,
         query,
@@ -139,7 +144,7 @@ export default class Database {
    * ```
    */
   async select<T>(query: string, bindValues?: unknown[]): Promise<T> {
-    const result = await invoke<T>('plugin:sql|select', {
+    const result = await invoke<T>('plugin:sql-pub|select', {
       db: this.path,
       query,
       values: bindValues ?? []
@@ -160,7 +165,7 @@ export default class Database {
    * @param db - Optionally state the name of a database if you are managing more than one. Otherwise, all database pools will be in scope.
    */
   async close(db?: string): Promise<boolean> {
-    const success = await invoke<boolean>('plugin:sql|close', {
+    const success = await invoke<boolean>('plugin:sql-pub|close', {
       db
     })
     return success

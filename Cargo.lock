@@ -6799,8 +6799,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-sql"
-version = "2.4.0"
+name = "tauri-plugin-sql-pub"
+version = "2.4.1"
 dependencies = [
  "futures-core",
  "indexmap 2.11.4",

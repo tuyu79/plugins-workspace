@@ -70,12 +70,12 @@ export function createConfig(options = {}) {
       input,
       output: {
         format: 'iife',
-        name: iifeVarName,
+        name: '__TAURI_PLUGIN_SQL__',
         // IIFE is in the format `var ${iifeVarName} = (() => {})()`
         // we check if __TAURI__ exists and inject the API object
         banner: "if ('__TAURI__' in window) {",
         // the last `}` closes the if in the banner
-        footer: `Object.defineProperty(window.__TAURI__, '${pluginJsName}', { value: ${iifeVarName} }) }`,
+        footer: `Object.defineProperty(window.__TAURI__, '${pluginJsName}', { value: __TAURI_PLUGIN_SQL__ }) }`,
         file: 'api-iife.js'
       },
       // and var is not guaranteed to assign to the global `window` object so we make sure to assign it
