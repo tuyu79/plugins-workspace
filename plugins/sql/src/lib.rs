@@ -14,9 +14,9 @@ mod decode;
 mod error;
 mod wrapper;
 
+pub use commands::*;
 pub use error::Error;
 pub use wrapper::DbPool;
-pub use commands::*;
 
 use futures_core::future::BoxFuture;
 use serde::{Deserialize, Serialize};
@@ -118,7 +118,10 @@ fn expand_tilde(path: &str) -> String {
     if let Some(stripped) = path.strip_prefix('~') {
         let home = env::var("HOME").expect("HOME 环境变量不存在");
         let stripped = stripped.strip_prefix('/').unwrap_or(stripped);
-        PathBuf::from(home).join(stripped).to_string_lossy().to_string()
+        PathBuf::from(home)
+            .join(stripped)
+            .to_string_lossy()
+            .to_string()
     } else {
         PathBuf::from(path).to_string_lossy().to_string()
     }
@@ -201,6 +204,8 @@ impl Builder {
 
                     for db in config.preload {
                         let db = expand_tilde(&db);
+                        println!("preload db path: {}", db);
+                        
                         let pool = DbPool::connect(&db, app).await?;
 
                         if let Some(migrations) =
