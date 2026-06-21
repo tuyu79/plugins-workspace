@@ -30,6 +30,8 @@ use tauri::{
 use tokio::sync::{Mutex, RwLock};
 
 use std::collections::HashMap;
+use std::env;
+use std::path::PathBuf;
 
 #[derive(Default)]
 pub struct DbInstances(pub RwLock<HashMap<String, DbPool>>);
@@ -111,6 +113,53 @@ fn run_async_command<F: std::future::Future>(cmd: F) -> F::Output {
     }
 }
 
+fn expand_tilde(path: &str) -> String {
+    if let Some(stripped) = path.strip_prefix('~') {
+        let home = env::var("HOME").expect("HOME 环境变量不存在");
+        let stripped = stripped.strip_prefix('/').unwrap_or(stripped);
+        PathBuf::from(home).join(stripped).to_string_lossy().to_string()
+    } else {
+        PathBuf::from(path).to_string_lossy().to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_expand_tilde_with_prefix() {
+        let home = std::env::var("HOME").unwrap();
+        let result = expand_tilde("~/some/path");
+        assert_eq!(result, format!("{}/some/path", home));
+    }
+
+    #[test]
+    fn test_expand_tilde_alone() {
+        let home = std::env::var("HOME").unwrap();
+        let result = expand_tilde("~");
+        assert_eq!(result, format!("{}/", home));
+    }
+
+    #[test]
+    fn test_expand_tilde_no_tilde() {
+        let result = expand_tilde("/absolute/path");
+        assert_eq!(result, "/absolute/path");
+    }
+
+    #[test]
+    fn test_expand_tilde_relative_path() {
+        let result = expand_tilde("relative/path");
+        assert_eq!(result, "relative/path");
+    }
+
+    #[test]
+    fn test_expand_tilde_tilde_in_middle() {
+        let result = expand_tilde("/path/~user/file");
+        assert_eq!(result, "/path/~user/file");
+    }
+}
+
 /// Tauri SQL plugin builder.
 #[derive(Default)]
 pub struct Builder {
@@ -150,6 +199,7 @@ impl Builder {
                     let mut lock = instances.0.write().await;
 
                     for db in config.preload {
+                        let db = expand_tilde(&db);
                         let pool = DbPool::connect(&db, app).await?;
 
                         if let Some(migrations) =
