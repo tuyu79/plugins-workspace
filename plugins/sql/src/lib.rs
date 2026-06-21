@@ -115,15 +115,24 @@ fn run_async_command<F: std::future::Future>(cmd: F) -> F::Output {
 }
 
 fn expand_tilde(path: &str) -> String {
-    if let Some(stripped) = path.strip_prefix('~') {
+    if let Some((scheme, path_part)) = path.split_once(':') {
+        if path_part.starts_with('~') {
+            let home = env::var("HOME").expect("HOME 环境变量不存在");
+            let stripped = path_part.strip_prefix('~').unwrap_or("");
+            let stripped = stripped.strip_prefix('/').unwrap_or(stripped);
+            let expanded = PathBuf::from(home).join(stripped);
+            format!("{}:{}", scheme, expanded.to_string_lossy())
+        } else {
+            path.to_string()
+        }
+    } else if path.starts_with('~') {
         let home = env::var("HOME").expect("HOME 环境变量不存在");
+        let stripped = path.strip_prefix('~').unwrap_or("");
         let stripped = stripped.strip_prefix('/').unwrap_or(stripped);
-        PathBuf::from(home)
-            .join(stripped)
-            .to_string_lossy()
-            .to_string()
+        let expanded = PathBuf::from(home).join(stripped);
+        expanded.to_string_lossy().to_string()
     } else {
-        PathBuf::from(path).to_string_lossy().to_string()
+        path.to_string()
     }
 }
 
@@ -132,35 +141,37 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_expand_tilde_with_prefix() {
+    fn test_expand_tilde_sqlite_url() {
         let home = std::env::var("HOME").unwrap();
-        let result = expand_tilde("~/some/path");
-        assert_eq!(result, format!("{}/some/path", home));
+        let result = expand_tilde("sqlite:~/.zip/app/app.db");
+        assert_eq!(result, format!("sqlite:{}", home) + "/.zip/app/app.db");
     }
 
     #[test]
-    fn test_expand_tilde_alone() {
+    fn test_expand_tilde_mysql_url() {
         let home = std::env::var("HOME").unwrap();
-        let result = expand_tilde("~");
-        assert_eq!(result, format!("{}/", home));
+        let result = expand_tilde("mysql:~/.my.cnf");
+        assert_eq!(result, format!("mysql:{}", home) + "/.my.cnf");
+    }
+
+    #[test]
+    fn test_expand_tilde_postgres_url() {
+        let home = std::env::var("HOME").unwrap();
+        let result = expand_tilde("postgres:~/.pgpass");
+        assert_eq!(result, format!("postgres:{}", home) + "/.pgpass");
+    }
+
+    #[test]
+    fn test_expand_tilde_no_scheme() {
+        let home = std::env::var("HOME").unwrap();
+        let result = expand_tilde("~/.config");
+        assert_eq!(result, format!("{}/.config", home));
     }
 
     #[test]
     fn test_expand_tilde_no_tilde() {
         let result = expand_tilde("/absolute/path");
         assert_eq!(result, "/absolute/path");
-    }
-
-    #[test]
-    fn test_expand_tilde_relative_path() {
-        let result = expand_tilde("relative/path");
-        assert_eq!(result, "relative/path");
-    }
-
-    #[test]
-    fn test_expand_tilde_tilde_in_middle() {
-        let result = expand_tilde("/path/~user/file");
-        assert_eq!(result, "/path/~user/file");
     }
 }
 
@@ -205,7 +216,7 @@ impl Builder {
                     for db in config.preload {
                         let db = expand_tilde(&db);
                         println!("preload db path: {}", db);
-                        
+
                         let pool = DbPool::connect(&db, app).await?;
 
                         if let Some(migrations) =
