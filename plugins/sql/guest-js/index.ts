@@ -26,8 +26,13 @@ export interface QueryResult {
  */
 export default class Database {
   path: string
+
   constructor(path: string) {
     this.path = path
+  }
+
+  static default(): Database {
+    return new Database('')
   }
 
   /**
